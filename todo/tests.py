@@ -67,7 +67,7 @@ class TodoViewTestCase(TestCase):
 
         self.assertEqual(response.status_code,200)
         self.assertEqual(response.templates[0].name,'todo/index.html')
-        self.assertEqual(len(response.context['task']),1)
+        self.assertEqual(len(response.context['tasks']),1)
 
     def test_index_get_order_post(self):
         task1=Task(title='tas1',due_at=timezone.make_aware(datetime(2024,7,1)))
