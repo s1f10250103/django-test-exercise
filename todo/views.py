@@ -2,8 +2,18 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware
+from django.views.decorators.http import require_POST
 
 from todo.models import Task
+
+
+def parse_due_at(value):
+    if not value:
+        return None
+    due_at = parse_datetime(value)
+    if due_at is None:
+        return None
+    return make_aware(due_at)
 
 
 # Create your views here.
@@ -11,7 +21,7 @@ def index(request):
     if request.method == "POST":
         task = Task(
             title=request.POST["title"],
-            due_at=make_aware(parse_datetime(request.POST["due_at"])),
+            due_at=parse_due_at(request.POST.get("due_at")),
         )
         task.save()
 
@@ -42,7 +52,7 @@ def update(request, task_id):
 
     if request.method == "POST":
         task.title = request.POST["title"]
-        task.due_at = make_aware(parse_datetime(request.POST["due_at"]))
+        task.due_at = parse_due_at(request.POST.get("due_at"))
         task.save()
         return redirect("detail", task_id=task_id)
 
@@ -50,6 +60,7 @@ def update(request, task_id):
     return render(request, "todo/edit.html", context)
 
 
+@require_POST
 def delete(request, task_id):
     try:
         task = Task.objects.get(pk=task_id)
