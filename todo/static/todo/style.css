@@ -1,0 +1,6 @@
+body {
+  background: linear-gradient(135deg, #bcd3ff, #fefefe);
+}
+.text, form { background: #ffffff; border: 1px solid #b9c9e6; border-radius: 10px; padding: 16px; margin-bottom: 16px;}
+button { padding: 8px 14px; border: 0; border-radius: 6px; background: #3466c9; color: #fff; margin-top: 12px; cursor: pointer; }
+a { color: #244f9b; text-decoration: none; }
