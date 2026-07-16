@@ -116,3 +116,60 @@ class TodoViewTestCase(TestCase):
         response = client.get('/1/')
 
         self.assertEqual(response.status_code, 404)
+
+    def test_delete_post_success(self):
+        task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
+        task.save()
+        client = Client()
+        response = client.post('/{}/delete'.format(task.pk))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+        self.assertFalse(Task.objects.filter(pk=task.pk).exists())
+
+    def test_delete_get_not_allowed(self):
+        task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
+        task.save()
+        client = Client()
+        response = client.get('/{}/delete'.format(task.pk))
+
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Task.objects.filter(pk=task.pk).exists())
+
+    def test_delete_post_fail(self):
+        client = Client()
+        response = client.post('/1/delete')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_get_success(self):
+        task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
+        task.save()
+        client = Client()
+        response = client.get('/{}/update'.format(task.pk))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.templates[0].name, 'todo/edit.html')
+
+    def test_update_post_success(self):
+        task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
+        task.save()
+        client = Client()
+        response = client.post(
+            '/{}/update'.format(task.pk),
+            {'title': 'Updated Task', 'due_at': '2024-07-02 12:00:00'},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/{}/'.format(task.pk))
+        task.refresh_from_db()
+        self.assertEqual(task.title, 'Updated Task')
+        self.assertEqual(task.due_at, timezone.make_aware(datetime(2024, 7, 2, 12, 0, 0)))
+
+    def test_index_post_empty_due_at(self):
+        client = Client()
+        response = client.post('/', {'title': 'No due task', 'due_at': ''})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['tasks']), 1)
+        self.assertIsNone(Task.objects.first().due_at)
