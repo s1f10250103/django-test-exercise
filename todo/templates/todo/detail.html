@@ -24,6 +24,30 @@
       {% endif %}
     </ul>
 
+    <section>
+      <h2>Comments</h2>
+      {% if comments %}
+        <ul>
+          {% for comment in comments %}
+          <li>{{ comment.posted_at }}: {{ comment.content }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No comments yet.</p>
+      {% endif %}
+
+      <h3>Add a comment</h3>
+      <form action="{% url 'add_comment' task.id %}" method="post">
+        {% csrf_token %}
+        <div>
+          <textarea name="content" rows="4" cols="50" placeholder="Write a comment"></textarea>
+        </div>
+        <div>
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+    </section>
+
     <div>
       <a href="{% url 'index' %}">Top</a>
       <a href="{% url 'update' task.id %}">Edit</a>

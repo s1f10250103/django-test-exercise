@@ -4,7 +4,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware
 from django.views.decorators.http import require_POST
 
-from todo.models import Task
+from todo.models import Task, Comment
 
 
 def parse_due_at(value):
@@ -40,8 +40,22 @@ def detail(request, task_id):
     except Task.DoesNotExist:
         raise Http404("Task does not exist")
 
-    context = {"task": task}
+    comments = task.comments.order_by("posted_at")
+    context = {"task": task, "comments": comments}
     return render(request, "todo/detail.html", context)
+
+
+@require_POST
+def add_comment(request, task_id):
+    try:
+        task = Task.objects.get(pk=task_id)
+    except Task.DoesNotExist:
+        raise Http404("Task does not exist")
+
+    content = request.POST.get("content", "").strip()
+    if content:
+        Comment.objects.create(task=task, content=content)
+    return redirect("detail", task_id=task_id)
 
 
 def update(request, task_id):

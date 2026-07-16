@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.test import Client, TestCase
 from django.utils import timezone
-from todo.models import Task
+from todo.models import Task, Comment
 
 
 # Create your tests here.
@@ -110,6 +110,27 @@ class TodoViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, 'todo/detail.html')
         self.assertEqual(response.context['task'], task)
+
+    def test_detail_shows_comments(self):
+        task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
+        task.save()
+        Comment.objects.create(task=task, content='Hello comment')
+        client = Client()
+        response = client.get('/{}/'.format(task.pk))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Hello comment')
+
+    def test_add_comment_post_success(self):
+        task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
+        task.save()
+        client = Client()
+        response = client.post('/{}/comment/'.format(task.pk), {'content': 'Nice task'})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/{}/'.format(task.pk))
+        self.assertEqual(Comment.objects.filter(task=task).count(), 1)
+        self.assertEqual(Comment.objects.get(task=task).content, 'Nice task')
 
     def test_detail_get_fail(self):
         client = Client()

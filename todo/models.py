@@ -13,3 +13,12 @@ class Task(models.Model):
         if self.due_at is None:
             return False
         return self.due_at < dt
+
+
+class Comment(models.Model):
+    task = models.ForeignKey('Task', on_delete=models.CASCADE, related_name='comments')
+    content = models.CharField(max_length=500)
+    posted_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Comment on {self.task_id}: {self.content[:50]}"
