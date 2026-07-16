@@ -121,7 +121,7 @@ class TodoViewTestCase(TestCase):
         task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
         task.save()
         client = Client()
-        response = client.post('/{}/delete'.format(task.pk))
+        response = client.post('/{}/delete/'.format(task.pk))
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, '/')
@@ -131,14 +131,14 @@ class TodoViewTestCase(TestCase):
         task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
         task.save()
         client = Client()
-        response = client.get('/{}/delete'.format(task.pk))
+        response = client.get('/{}/delete/'.format(task.pk))
 
         self.assertEqual(response.status_code, 405)
         self.assertTrue(Task.objects.filter(pk=task.pk).exists())
 
     def test_delete_post_fail(self):
         client = Client()
-        response = client.post('/1/delete')
+        response = client.post('/1/delete/')
 
         self.assertEqual(response.status_code, 404)
 
@@ -146,7 +146,7 @@ class TodoViewTestCase(TestCase):
         task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
         task.save()
         client = Client()
-        response = client.get('/{}/update'.format(task.pk))
+        response = client.get('/{}/update/'.format(task.pk))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, 'todo/edit.html')
@@ -156,7 +156,7 @@ class TodoViewTestCase(TestCase):
         task.save()
         client = Client()
         response = client.post(
-            '/{}/update'.format(task.pk),
+            '/{}/update/'.format(task.pk),
             {'title': 'Updated Task', 'due_at': '2024-07-02 12:00:00'},
         )
 
